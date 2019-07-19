@@ -3,13 +3,6 @@ import "./App.css";
 import SearchBar from "./components/SearchBar";
 import axios from "axios";
 
-type searchResult = {
-  key: string;
-  city: string;
-  state: string;
-  country: string;
-};
-
 type searchInput = {
   street: string;
   city: string;
@@ -20,8 +13,10 @@ type searchInput = {
 
 type state = {
   searchInput: searchInput;
+  tempFormat: string;
   current: any;
   forecast: any;
+  location: searchInput;
 };
 
 class App extends Component {
@@ -33,8 +28,16 @@ class App extends Component {
       postalCode: "",
       country: ""
     },
+    tempFormat: "F",
     current: {},
-    forecast: {}
+    forecast: {},
+    location: {
+      street: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: ""
+    }
   };
 
   searchBarChange = (e: any): void => {
@@ -50,16 +53,43 @@ class App extends Component {
     e.preventDefault();
 
     const searchParameters: searchInput = this.state.searchInput;
-
-    axios.post("/api/weather/current", searchParameters).then(doc => {
-      this.setState({ current: doc.data });
-    });
-    axios.post("/api/weather/forecast", searchParameters).then(doc => {
-      this.setState({ forecast: doc.data });
-    });
+    axios
+      .post("/api/weather/weather", {
+        ...searchParameters,
+        tempFormat: this.state.tempFormat
+      })
+      .then(doc => {
+        this.setState({
+          current: doc.data.current,
+          forecast: doc.data.forecast,
+          location: doc.data.location
+        });
+      });
   };
 
   render() {
+    const currentTemp =
+      this.state.current &&
+      this.state.current.main &&
+      this.state.current.main.temp
+        ? `Current Temperature: ${this.state.current.main.temp} ${
+            this.state.tempFormat
+          }`
+        : "";
+
+    const location =
+      this.state.location && this.state.location.country
+        ? Object.values(this.state.location)
+            .filter(item => item !== "")
+            .map((item, index, array) => {
+              if (index !== array.length - 1) {
+                return <span key={item}>{item}, </span>;
+              } else {
+                return <span key={item}>{item}.</span>;
+              }
+            })
+        : "";
+
     return (
       <div className="App">
         <SearchBar
@@ -67,6 +97,8 @@ class App extends Component {
           handleSubmit={this.searchBarSubmit}
           handleChange={this.searchBarChange}
         />
+        <div>{currentTemp}</div>
+        <div>{location}</div>
       </div>
     );
   }

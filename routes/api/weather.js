@@ -84,7 +84,7 @@ router.post("/find", async (req, res) => {
   }
 });
 
-router.post("/current", async (req, res) => {
+router.post("/weather", async (req, res) => {
   const street = req.body.street ? `&street=${req.body.street}` : "";
   const city = req.body.city ? `&city=${req.body.city}` : "";
   const state = req.body.state ? `&state=${req.body.state}` : "";
@@ -96,26 +96,50 @@ router.post("/current", async (req, res) => {
   const geocodeUrl = `http://www.mapquestapi.com/geocoding/v1/address?key=${mapQuestApiKey}${street}${city}${state}${country}${postalCode}`;
 
   const tempFormat =
-    req.body.tempFormat && req.body.tempFormat === "imperial"
+    req.body.tempFormat && req.body.tempFormat === "F"
       ? `&units=imperial`
       : `&units=metric`;
 
-  const cityName = req.body.cityName ? `&q=${req.body.cityName}` : "";
-
-  const countryCode =
-    req.body.countryCode && req.body.cityName ? `,${req.body.countryCode}` : "";
-
   try {
     await axios.get(geocodeUrl).then(async doc => {
+      let current, forecast;
       const result = doc.data.results[0].locations[0];
       const latitude = `&lat=${result.latLng.lat}`;
       const longitude = `&lon=${result.latLng.lng}`;
-      const resourceUrl = `http://api.openweathermap.org/data/2.5/weather?appid=${openWeatherMapApiKey}${latitude}${longitude}${cityName}${countryCode}${tempFormat}`;
+
+      const resultStreet = result.street ? result.street : "";
+      const resultCity = result.adminArea5 ? result.adminArea5 : "";
+      const resultState = result.adminArea3 ? result.adminArea3 : "";
+      const resultCountry = result.adminArea1 ? result.adminArea1 : "";
+      const resultPostalCode = result.postalCode ? result.postalCode : "";
+      const location = {
+        street: resultStreet,
+        city: resultCity,
+        state: resultState,
+        country: resultCountry,
+        postalCode: resultPostalCode
+      };
+
+      const currentWeatherUrl = `http://api.openweathermap.org/data/2.5/weather?appid=${openWeatherMapApiKey}${latitude}${longitude}${tempFormat}`;
+
+      const forecastWeatherUrl = `http://api.openweathermap.org/data/2.5/forecast?appid=${openWeatherMapApiKey}${latitude}${longitude}${tempFormat}`;
 
       try {
-        await axios.get(resourceUrl).then(async doc => {
-          res.json(doc.data);
-        });
+        await axios
+          .get(currentWeatherUrl)
+          .then(async doc => {
+            current = doc.data;
+          })
+          .then(async () => {
+            await axios
+              .get(forecastWeatherUrl)
+              .then(async doc => {
+                forecast = doc.data;
+              })
+              .then(async () => {
+                res.json({ current, forecast, location });
+              });
+          });
       } catch (err) {
         res.status(500).send(err.message);
       }
