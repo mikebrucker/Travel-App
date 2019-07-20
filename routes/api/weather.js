@@ -134,7 +134,21 @@ router.post("/weather", async (req, res) => {
             await axios
               .get(forecastWeatherUrl)
               .then(async doc => {
-                forecast = doc.data;
+                const dayList = doc.data.list
+                  .map(item => `${new Date(item.dt * 1000).getDay()}`)
+                  .filter((item, i, arr) => {
+                    if (i !== 0 && item !== arr[i - 1]) {
+                      return item;
+                    } else if (i === 0) {
+                      return item;
+                    }
+                  });
+
+                forecast = dayList.map(day => {
+                  return doc.data.list.filter(
+                    item => `${new Date(item.dt * 1000).getDay()}` === day
+                  );
+                });
               })
               .then(async () => {
                 res.json({ current, forecast, location });
