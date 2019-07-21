@@ -14,77 +14,14 @@ const darkSkyApiKey = require("../../config/keys").DarkSkyApiKey;
 // Dark Sky apiKey
 const mapQuestApiKey = require("../../config/keys").MapQuestApiKey;
 
-// AccuWeather API
-// @route 	POST api/weather
-// @desc 		Search for city to get
-// @access 	Public
-router.post("/search", async (req, res) => {
-  const locationSearch = req.body.locationSearch
-    ? req.body.locationSearch
-    : "Philadelphia";
-  const resourceUrl = `http://dataservice.accuweather.com/locations/v1/cities/autocomplete?apikey=${accuWeatherApiKey}&q=${locationSearch}`;
-
-  try {
-    await axios.get(resourceUrl).then(async doc => {
-      const cityArray = doc.data.map(item => {
-        return {
-          key: item.Key,
-          city: item.LocalizedName,
-          state: item.AdministrativeArea.LocalizedName,
-          country: item.Country.LocalizedName
-        };
-      });
-      res.json(cityArray);
-    });
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
-
-router.post("/daily", async (req, res) => {
-  const key = req.body.locationKey ? req.body.locationKey : "";
-  const metric = req.body.metric ? "true" : "false";
-  const resourceUrl = `http://dataservice.accuweather.com/forecasts/v1/daily/1day/${key}?apikey=${accuWeatherApiKey}&details=false&metric=${metric}`;
-
-  try {
-    await axios.get(resourceUrl).then(async doc => {
-      const daily = doc.data.DailyForecasts[0];
-      const todaysWeather = {
-        headline: doc.data.Headline.Text,
-        tempMin: daily.Temperature.Minimum,
-        tempMax: daily.Temperature.Maximum,
-        day: daily.Day.Value,
-        night: daily.Night.Value,
-        unit: daily.Day.Unit
-      };
-      res.json(todaysWeather);
-    });
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
-
 // Open Weather Map API
-router.post("/find", async (req, res) => {
-  const tempFormat =
-    req.body.tempFormat && req.body.tempFormat === "imperial"
-      ? `&units=imperial`
-      : `&units=metric`;
-  const cityName = req.body.cityName ? `&q=${req.body.cityName}` : "";
-  const countryCode =
-    req.body.countryCode && req.body.cityName ? `,${req.body.countryCode}` : "";
-  const resourceUrl = `http://api.openweathermap.org/data/2.5/find?appid=${openWeatherMapApiKey}${cityName}${countryCode}${tempFormat}`;
-
-  try {
-    await axios.get(resourceUrl).then(async doc => {
-      res.json(doc.data);
-    });
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
-
-router.post("/weather", async (req, res) => {
+// @route 	POST api/weather
+// @access 	Public
+// @desc 		Gets geolocation of entered address
+//          Gets current and future weather of geolocation
+//          Open Weather Map does not find State of location,
+//          So geolocation is necessary
+router.post("/", async (req, res) => {
   const street = req.body.street ? `&street=${req.body.street}` : "";
   const city = req.body.city ? `&city=${req.body.city}` : "";
   const state = req.body.state ? `&state=${req.body.state}` : "";
@@ -95,10 +32,7 @@ router.post("/weather", async (req, res) => {
 
   const geocodeUrl = `http://www.mapquestapi.com/geocoding/v1/address?key=${mapQuestApiKey}${street}${city}${state}${country}${postalCode}`;
 
-  const tempFormat =
-    req.body.tempFormat && req.body.tempFormat === "F"
-      ? `&units=imperial`
-      : `&units=metric`;
+  const tempFormat = req.body.celsius ? `&units=metric` : `&units=imperial`;
 
   try {
     await axios.get(geocodeUrl).then(async doc => {
@@ -128,14 +62,23 @@ router.post("/weather", async (req, res) => {
         await axios
           .get(currentWeatherUrl)
           .then(async doc => {
-            current = doc.data;
+            current = {
+              latitude: doc.data.coord.lat,
+              longitude: doc.data.coord.lon,
+              temp: doc.data.main.temp,
+              weather: doc.data.weather[0].main,
+              desc: doc.data.weather[0].description,
+              icon: doc.data.weather[0].icon,
+              sunrise: doc.data.sys.sunrise * 1000,
+              sunset: doc.data.sys.sunset * 1000
+            };
           })
           .then(async () => {
             await axios
               .get(forecastWeatherUrl)
               .then(async doc => {
                 const dayList = doc.data.list
-                  .map(item => `${new Date(item.dt * 1000).getDay()}`)
+                  .map(item => `${new Date(item.dt * 1000).toDateString()}`)
                   .filter((item, i, arr) => {
                     if (i !== 0 && item !== arr[i - 1]) {
                       return item;
@@ -145,9 +88,32 @@ router.post("/weather", async (req, res) => {
                   });
 
                 forecast = dayList.map(day => {
-                  return doc.data.list.filter(
-                    item => `${new Date(item.dt * 1000).getDay()}` === day
-                  );
+                  return {
+                    day,
+                    forecast: doc.data.list
+                      .filter(
+                        item =>
+                          `${new Date(item.dt * 1000).toDateString()}` === day
+                      )
+                      .map(item => {
+                        const hours =
+                          item.dt && typeof item.dt === "number"
+                            ? new Date(item.dt * 1000).getHours()
+                            : 0;
+                        const adjustedHours =
+                          hours > 12 ? `${hours - 12}:00pm` : `${hours}:00am`;
+
+                        return {
+                          timezone: doc.data.city.timezone,
+                          dt: item.dt * 1000,
+                          time: adjustedHours,
+                          temp: item.main.temp,
+                          weather: item.weather[0].main,
+                          desc: item.weather[0].description,
+                          icon: item.weather[0].icon
+                        };
+                      })
+                  };
                 });
               })
               .then(async () => {
@@ -157,66 +123,6 @@ router.post("/weather", async (req, res) => {
       } catch (err) {
         res.status(500).send(err.message);
       }
-    });
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
-
-router.post("/forecast", async (req, res) => {
-  const street = req.body.street ? `&street=${req.body.street}` : "";
-  const city = req.body.city ? `&city=${req.body.city}` : "";
-  const state = req.body.state ? `&state=${req.body.state}` : "";
-  const country = req.body.country ? `&country=${req.body.country}` : "";
-  const postalCode = req.body.postalCode
-    ? `&postalCode=${req.body.postalCode}`
-    : "";
-
-  const geocodeUrl = `http://www.mapquestapi.com/geocoding/v1/address?key=${mapQuestApiKey}${street}${city}${state}${country}${postalCode}`;
-
-  const tempFormat =
-    req.body.tempFormat && req.body.tempFormat === "imperial"
-      ? `&units=imperial`
-      : `&units=metric`;
-
-  const cityName = req.body.cityName ? `&q=${req.body.cityName}` : "";
-
-  const countryCode =
-    req.body.countryCode && req.body.cityName ? `,${req.body.countryCode}` : "";
-
-  try {
-    await axios.get(geocodeUrl).then(async doc => {
-      const result = doc.data.results[0].locations[0];
-      const latitude = `&lat=${result.latLng.lat}`;
-      const longitude = `&lon=${result.latLng.lng}`;
-      const resourceUrl = `http://api.openweathermap.org/data/2.5/forecast?appid=${openWeatherMapApiKey}${latitude}${longitude}${cityName}${countryCode}${tempFormat}`;
-
-      try {
-        await axios.get(resourceUrl).then(async doc => {
-          res.json(doc.data);
-        });
-      } catch (err) {
-        res.status(500).send(err.message);
-      }
-    });
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});
-
-// Dark Sky API
-router.post("/dark", async (req, res) => {
-  // const tempFormat =
-  //   req.body.tempFormat && req.body.tempFormat === "imperial"
-  //     ? `&units=imperial`
-  //     : `&units=metric`;
-  // const cityName = req.body.cityName ? `&q=${req.body.cityName}` : "";
-  // const countryCode = req.body.countryCode && req.body.cityName ? `,${req.body.countryCode}` : "";
-  const resourceUrl = `https://api.darksky.net/forecast/${darkSkyApiKey}/37.8267,-122.4233`;
-
-  try {
-    await axios.get(resourceUrl).then(async doc => {
-      res.json(doc.data);
     });
   } catch (err) {
     res.status(500).send(err.message);
