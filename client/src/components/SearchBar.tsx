@@ -13,7 +13,7 @@ const SearchBar: any = ({
 }) => {
   return (
     <form className="SearchBar" onSubmit={handleSubmit}>
-      <h2>Where do you want to go?</h2>
+      <h1>Where do you want to go?</h1>
       <TextField
         name="street"
         placeholder="Street"
@@ -52,6 +52,9 @@ const SearchBar: any = ({
           &times;
         </Button>
         <TempFormat tempFormat={celsius} handleChange={tempFormatChange} />
+      </div>
+      <div>
+        <sup>Only one search parameter is required.</sup>
       </div>
     </form>
   );

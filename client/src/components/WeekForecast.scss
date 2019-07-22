@@ -1,0 +1,42 @@
+.WeekForecast {
+  .forecast-card {
+    margin: 8px;
+    vertical-align: top;
+    display: inline-block;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table-image {
+      text-align: center;
+    }
+
+    td,
+    th {
+      text-align: left;
+      padding: 0px 8px;
+
+      img {
+        margin: 0;
+        width: 40px;
+        vertical-align: middle;
+      }
+    }
+
+    tr:nth-child(odd) {
+      background-color: aquamarine;
+    }
+
+    tr:nth-child(even) {
+      background-color: lightgoldenrodyellow;
+    }
+  }
+
+  @media all and (max-width: 425px) {
+    .forecast-card {
+      min-width: 300px;
+    }
+  }
+}

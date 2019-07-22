@@ -1,0 +1,13 @@
+.Location {
+  .header-card {
+    background-color: aquamarine;
+    margin: 8px auto;
+    display: inline-block;
+    min-width: 300px;
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+  }
+}
