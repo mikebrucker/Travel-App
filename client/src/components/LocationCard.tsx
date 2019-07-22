@@ -1,9 +1,9 @@
 import React from "react";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
-import "./Location.scss";
+import "./LocationCard.scss";
 
-const Location: any = ({ current, location, celsius }) => {
+const LocationCard: any = ({ current, location, celsius }) => {
   const currentWeather =
     current && current.temp && current.icon ? (
       <CardContent>
@@ -14,10 +14,7 @@ const Location: any = ({ current, location, celsius }) => {
           {current.desc.charAt(0).toUpperCase()}
           {current.desc.slice(1)}
         </div>
-        <img
-          src={`http://openweathermap.org/img/wn/${current.icon}@2x.png`}
-          alt={current.weather}
-        />
+        <img src={current.icon} alt={current.weather} />
       </CardContent>
     ) : (
       ""
@@ -44,7 +41,7 @@ const Location: any = ({ current, location, celsius }) => {
       ""
     );
 
-  return <div className="Location">{myLocation}</div>;
+  return <div className="LocationCard">{myLocation}</div>;
 };
 
-export default Location;
+export default LocationCard;

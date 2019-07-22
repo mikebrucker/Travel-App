@@ -19,12 +19,7 @@ const WeekForecast: any = ({ forecast, celsius }) => {
                       </td>
                       <td>{forecast.weather}</td>
                       <td className="table-image">
-                        <img
-                          src={`http://openweathermap.org/img/wn/${
-                            forecast.icon
-                          }@2x.png`}
-                          alt={forecast.main}
-                        />
+                        <img src={forecast.icon} alt={forecast.main} />
                       </td>
                     </tr>
                   ))}

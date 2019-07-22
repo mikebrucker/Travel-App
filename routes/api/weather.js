@@ -107,7 +107,9 @@ router.post("/", async (req, res) => {
               temp: doc.data.main.temp,
               weather: doc.data.weather[0].main,
               desc: doc.data.weather[0].description,
-              icon: doc.data.weather[0].icon,
+              icon: `http://openweathermap.org/img/wn/${
+                doc.data.weather[0].icon
+              }@2x.png`,
               sunrise: doc.data.sys.sunrise * 1000,
               sunset: doc.data.sys.sunset * 1000
             };
@@ -168,7 +170,9 @@ router.post("/", async (req, res) => {
                           temp: item.main.temp,
                           weather: item.weather[0].main,
                           desc: item.weather[0].description,
-                          icon: item.weather[0].icon
+                          icon: `http://openweathermap.org/img/wn/${
+                            item.weather[0].icon
+                          }@2x.png`
                         };
                       })
                   };
