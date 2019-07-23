@@ -1,21 +1,24 @@
 import React from "react";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Switch from "@material-ui/core/Switch";
+import ToggleButton from "@material-ui/lab/ToggleButton";
+import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import "./TempFormat.scss";
 
 const TempFormat: any = ({ handleChange, tempFormat }) => {
   return (
     <div className="TempFormat">
-      <FormControlLabel
-        control={
-          <Switch
-            checked={tempFormat}
-            onChange={handleChange}
-            value={tempFormat}
-          />
-        }
-        label={tempFormat ? "C" : "F"}
-      />
+      <ToggleButtonGroup
+        size="small"
+        value={tempFormat}
+        exclusive
+        onChange={handleChange}
+      >
+        <ToggleButton classes={{ selected: "selected-temp" }} value={true}>
+          C
+        </ToggleButton>
+        <ToggleButton classes={{ selected: "selected-temp" }} value={false}>
+          F
+        </ToggleButton>
+      </ToggleButtonGroup>
     </div>
   );
 };

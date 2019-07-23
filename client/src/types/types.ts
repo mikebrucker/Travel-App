@@ -9,19 +9,20 @@ export type Location = {
 export type Current = {
   latitude: number | null;
   longitude: number | null;
-  temp: number | null;
+  temp: string;
   weather: string;
   desc: string;
   icon: string;
   sunrise: number | null;
   sunset: number | null;
+  timezoneDifference: number | null;
 };
 
 export type Forecast3Hour = {
   dt: number | null;
   time: string;
   timezone: number | null;
-  temp: number | null;
+  temp: string;
   weather: string;
   desc: string;
   icon: string;
@@ -34,9 +35,16 @@ export type ForecastDay = {
 
 export type Forecast = ForecastDay[];
 
+export type Clock = {
+  hours: number | null;
+  minutes: number | null;
+  seconds: number | null;
+};
+
 export type State = {
   celsius: boolean;
   userTimezone: number;
+  clock: Clock;
   searchInput: Location;
   current: Current;
   forecast: Forecast;

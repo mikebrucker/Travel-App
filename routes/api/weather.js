@@ -60,6 +60,7 @@ const getTimezoneDifference = (forecastTimezone, userTimezone) => {
 //          Open Weather Map does not find State of location,
 //          So geolocation is necessary
 router.post("/", async (req, res) => {
+  let timezone, timezoneDifference;
   const userTimezone = req.body.userTimezone;
   const street = req.body.street ? `&street=${req.body.street}` : "";
   const city = req.body.city ? `&city=${req.body.city}` : "";
@@ -71,7 +72,8 @@ router.post("/", async (req, res) => {
 
   const geocodeUrl = `http://www.mapquestapi.com/geocoding/v1/address?key=${mapQuestApiKey}${street}${city}${state}${country}${postalCode}`;
 
-  const tempFormat = req.body.celsius ? `&units=metric` : `&units=imperial`;
+  const tempFormat = req.body.celsius ? "&units=metric" : "&units=imperial";
+  const celsiusOrFahrenheit = req.body.celsius ? "C" : "F";
 
   try {
     await axios.get(geocodeUrl).then(async doc => {
@@ -104,7 +106,7 @@ router.post("/", async (req, res) => {
             current = {
               latitude: doc.data.coord.lat,
               longitude: doc.data.coord.lon,
-              temp: doc.data.main.temp,
+              temp: `${doc.data.main.temp}\u00B0 ${celsiusOrFahrenheit}`,
               weather: doc.data.weather[0].main,
               desc: doc.data.weather[0].description,
               icon: `http://openweathermap.org/img/wn/${
@@ -118,8 +120,8 @@ router.post("/", async (req, res) => {
             await axios
               .get(forecastWeatherUrl)
               .then(async doc => {
-                const timezone = doc.data.city.timezone;
-                const timezoneDifference = getTimezoneDifference(
+                timezone = doc.data.city.timezone;
+                timezoneDifference = getTimezoneDifference(
                   timezone,
                   userTimezone
                 );
@@ -167,7 +169,9 @@ router.post("/", async (req, res) => {
                           timezone,
                           dt: (item.dt + timezoneDifference) * 1000,
                           time: adjustedHours,
-                          temp: item.main.temp,
+                          temp: `${
+                            item.main.temp
+                          }\u00B0 ${celsiusOrFahrenheit}`,
                           weather: item.weather[0].main,
                           desc: item.weather[0].description,
                           icon: `http://openweathermap.org/img/wn/${
@@ -179,6 +183,10 @@ router.post("/", async (req, res) => {
                 });
               })
               .then(async () => {
+                current = {
+                  ...current,
+                  timezoneDifference
+                };
                 res.json({ current, forecast, location });
               });
           });

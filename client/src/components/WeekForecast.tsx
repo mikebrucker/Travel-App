@@ -2,7 +2,7 @@ import React from "react";
 import Card from "@material-ui/core/Card";
 import "./WeekForecast.scss";
 
-const WeekForecast: any = ({ forecast, celsius }) => {
+const WeekForecast: any = ({ forecast }) => {
   const week =
     forecast && forecast.length > 0
       ? forecast.map(item => {
@@ -14,9 +14,7 @@ const WeekForecast: any = ({ forecast, celsius }) => {
                   {item.forecast.map(forecast => (
                     <tr key={forecast.dt}>
                       <td>{forecast.time}</td>
-                      <td>
-                        {forecast.temp}&deg; {celsius ? "C" : "F"}
-                      </td>
+                      <td>{forecast.temp}</td>
                       <td>{forecast.weather}</td>
                       <td className="table-image">
                         <img src={forecast.icon} alt={forecast.main} />
