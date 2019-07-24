@@ -1,6 +1,8 @@
 import React from "react";
 import TempFormat from "./TempFormat";
-import { TextField, Button } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import Tooltip from "@material-ui/core/Tooltip";
 import "./SearchBar.scss";
 
 const SearchBar: any = ({
@@ -48,9 +50,11 @@ const SearchBar: any = ({
         <Button color="primary" type="submit" variant="contained">
           Search
         </Button>
-        <Button color="secondary" variant="contained" onClick={clearForm}>
-          &times;
-        </Button>
+        <Tooltip title="Clear Search Inputs" enterDelay={333}>
+          <Button color="secondary" variant="contained" onClick={clearForm}>
+            &times;
+          </Button>
+        </Tooltip>
         <TempFormat tempFormat={celsius} handleChange={tempFormatChange} />
       </div>
       <div>

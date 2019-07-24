@@ -54,7 +54,7 @@ const LocationCard: any = ({ current, location, clock }) => {
   const seconds = clock.seconds > 9 ? clock.seconds : `0${clock.seconds}`;
   const ampm = adjustedHours > 11 ? "PM" : "AM";
 
-  const time = clock.hours > -1 ? `${hours}:${minutes}:${seconds} ${ampm}` : "";
+  const time = clock.hours > -1 ? `${hours}:${minutes}:${seconds}` : "";
 
   const myLocation =
     location && location.country ? (
@@ -70,7 +70,10 @@ const LocationCard: any = ({ current, location, clock }) => {
                 return <span key={index}>{item}.</span>;
               }
             })}
-          <div>{time}</div>
+          <div className="time">
+            <span className="numbers">{time}</span>
+            <span className="ampm"> {ampm}</span>
+          </div>
         </CardContent>
         {currentWeather}
       </Card>

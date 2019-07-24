@@ -1,6 +1,7 @@
 import React from "react";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
+import Tooltip from "@material-ui/core/Tooltip";
 import "./TempFormat.scss";
 
 const TempFormat: any = ({ handleChange, tempFormat }) => {
@@ -13,10 +14,14 @@ const TempFormat: any = ({ handleChange, tempFormat }) => {
         onChange={handleChange}
       >
         <ToggleButton classes={{ selected: "selected-temp" }} value={true}>
-          C
+          <Tooltip title="Celsius" enterDelay={333}>
+            <div>C</div>
+          </Tooltip>
         </ToggleButton>
         <ToggleButton classes={{ selected: "selected-temp" }} value={false}>
-          F
+          <Tooltip title="Fahrenheit" enterDelay={333}>
+            <div>F</div>
+          </Tooltip>
         </ToggleButton>
       </ToggleButtonGroup>
     </div>
