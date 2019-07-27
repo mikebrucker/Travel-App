@@ -2,6 +2,8 @@ import React from "react";
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import "./LocationCard.scss";
+import CardMedia from "@material-ui/core/CardMedia";
+import { itDoesntLookLikeAnythingToMe } from "../types/arnold";
 
 const LocationCard: any = ({ current, location, clock }) => {
   const currentWeather =
@@ -56,20 +58,27 @@ const LocationCard: any = ({ current, location, clock }) => {
 
   const time = clock.hours > -1 ? `${hours}:${minutes}:${seconds}` : "";
 
+  const mapUrl = `https://www.mapquestapi.com/staticmap/v5/map?key=${itDoesntLookLikeAnythingToMe}&center=${
+    current.latitude
+  },${current.longitude}`;
+
+  const locationFromSearch = Object.values(location)
+    .filter(item => item !== "")
+    .map((item, index, array) => {
+      if (index !== array.length - 1) {
+        return `${item},`;
+      } else {
+        return `${item}.`;
+      }
+    })
+    .join(" ");
+
   const myLocation =
     location && location.country ? (
       <Card raised className="header-card">
         <CardContent>
           <h3>Right now in</h3>
-          {Object.values(location)
-            .filter(item => item !== "")
-            .map((item, index, array) => {
-              if (index !== array.length - 1) {
-                return <span key={index}>{item}, </span>;
-              } else {
-                return <span key={index}>{item}.</span>;
-              }
-            })}
+          {locationFromSearch}
           <div className="time">
             <span className="numbers">{time}</span>
             <span className="ampm"> {ampm}</span>
@@ -81,7 +90,22 @@ const LocationCard: any = ({ current, location, clock }) => {
       ""
     );
 
-  return <div className="LocationCard">{myLocation}</div>;
+  const mapCard = (
+    <Card className="mapCard">
+      <CardMedia
+        className="map-image"
+        image={mapUrl}
+        title={locationFromSearch}
+      />
+    </Card>
+  );
+
+  return (
+    <div className="LocationCard">
+      {myLocation}
+      {mapCard}
+    </div>
+  );
 };
 
 export default LocationCard;

@@ -4,7 +4,19 @@
 }
 
 .LocationCard {
+  .mapCard {
+    margin: 8px;
+    vertical-align: top;
+    display: inline-block;
+    width: 300px;
+
+    .map-image {
+      height: 300px;
+    }
+  }
+
   margin: 8px;
+
   .header-card {
     background-color: aquamarine;
     margin: 8px auto;

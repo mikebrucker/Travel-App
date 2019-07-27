@@ -13,14 +13,20 @@ const TempFormat: any = ({ handleChange, tempFormat }) => {
         exclusive
         onChange={handleChange}
       >
-        <ToggleButton classes={{ selected: "selected-temp" }} value={true}>
+        <ToggleButton
+          classes={{ root: "font", selected: "selected-celsius" }}
+          value={true}
+        >
           <Tooltip title="Celsius" enterDelay={333}>
-            <div>C</div>
+            <div>&deg;C</div>
           </Tooltip>
         </ToggleButton>
-        <ToggleButton classes={{ selected: "selected-temp" }} value={false}>
+        <ToggleButton
+          classes={{ root: "font", selected: "selected-fahrenheit" }}
+          value={false}
+        >
           <Tooltip title="Fahrenheit" enterDelay={333}>
-            <div>F</div>
+            <div>&deg;F</div>
           </Tooltip>
         </ToggleButton>
       </ToggleButtonGroup>

@@ -3,12 +3,17 @@
   margin-left: 8px;
   display: inline-block;
 
-  .selected-temp {
-    background-color: aquamarine !important;
+  .font {
+    font-family: "Courier New", Courier, monospace;
   }
 
-  .temp-switch {
-    // width: 100%;
-    // height: 100%;
+  .selected-celsius {
+    background-color: aquamarine !important;
+    box-shadow: -1px -1px grey, -1px 1px grey, 0px -1px grey, 0px 1px grey;
+  }
+
+  .selected-fahrenheit {
+    background-color: aquamarine !important;
+    box-shadow: 1px -1px grey, 1px 1px grey, 0px -1px grey, 0px 1px grey;
   }
 }

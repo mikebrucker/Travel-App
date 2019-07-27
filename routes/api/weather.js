@@ -25,7 +25,7 @@ const getTimezoneDifference = require("../../helpers/dateHelpers");
 //          Open Weather Map does not find State of location,
 //          So geolocation is necessary
 router.post("/", async (req, res) => {
-  let timezone, timezoneDifference;
+  let current, forecast, searchResults, timezoneDifference;
   const userTimezone = req.body.userTimezone;
   const street = req.body.street ? `&street=${req.body.street}` : "";
   const city = req.body.city ? `&city=${req.body.city}` : "";
@@ -42,10 +42,11 @@ router.post("/", async (req, res) => {
 
   try {
     await axios.get(geocodeUrl).then(async doc => {
-      let current, forecast;
       const result = doc.data.results[0].locations[0];
-      const latitude = `&lat=${result.latLng.lat}`;
-      const longitude = `&lon=${result.latLng.lng}`;
+      const latitude = result.latLng.lat;
+      const longitude = result.latLng.lng;
+      const owmLatitude = `&lat=${result.latLng.lat}`;
+      const owmLongitude = `&lon=${result.latLng.lng}`;
 
       const resultStreet = result.street ? result.street : "";
       const resultCity = result.adminArea5 ? result.adminArea5 : "";
@@ -60,100 +61,113 @@ router.post("/", async (req, res) => {
         postalCode: resultPostalCode
       };
 
-      const currentWeatherUrl = `http://api.openweathermap.org/data/2.5/weather?appid=${openWeatherMapApiKey}${latitude}${longitude}${tempFormat}`;
+      const currentWeatherUrl = `http://api.openweathermap.org/data/2.5/weather?appid=${openWeatherMapApiKey}${owmLatitude}${owmLongitude}${tempFormat}`;
 
-      const forecastWeatherUrl = `http://api.openweathermap.org/data/2.5/forecast?appid=${openWeatherMapApiKey}${latitude}${longitude}${tempFormat}`;
+      const forecastWeatherUrl = `http://api.openweathermap.org/data/2.5/forecast?appid=${openWeatherMapApiKey}${owmLatitude}${owmLongitude}${tempFormat}`;
+
+      const mapUrl = `https://www.mapquestapi.com/staticmap/v5/map?key=${mapQuestApiKey}&center=${latitude},${longitude}`;
+
+      const searchUrl = `https://www.mapquestapi.com/search/v2/radius?key=${mapQuestApiKey}&origin=${latitude},${longitude}&radius=2&maxMatches=10&ambiguities=ignore&hostedData=mqap.ntpois|group_sic_code=?|599972&outFormat=json`;
+
+      try {
+        await axios.get(searchUrl).then(async doc => {
+          searchResults = doc.data.searchResults.map(item => {
+            return {
+              key: item.key,
+              name: item.name,
+              lat: item.shapePoints[0],
+              long: item.shapePoints[1]
+            };
+          });
+        });
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
+
+      try {
+        await axios.get(currentWeatherUrl).then(async doc => {
+          current = {
+            latitude: doc.data.coord.lat,
+            longitude: doc.data.coord.lon,
+            temp: `${doc.data.main.temp}\u00B0 ${celsiusOrFahrenheit}`,
+            weather: doc.data.weather[0].main,
+            desc: doc.data.weather[0].description,
+            icon: `http://openweathermap.org/img/wn/${
+              doc.data.weather[0].icon
+            }@2x.png`,
+            sunrise: doc.data.sys.sunrise * 1000,
+            sunset: doc.data.sys.sunset * 1000
+          };
+        });
+      } catch (err) {
+        res.status(500).send(err.message);
+      }
 
       try {
         await axios
-          .get(currentWeatherUrl)
+          .get(forecastWeatherUrl)
           .then(async doc => {
-            current = {
-              latitude: doc.data.coord.lat,
-              longitude: doc.data.coord.lon,
-              temp: `${doc.data.main.temp}\u00B0 ${celsiusOrFahrenheit}`,
-              weather: doc.data.weather[0].main,
-              desc: doc.data.weather[0].description,
-              icon: `http://openweathermap.org/img/wn/${
-                doc.data.weather[0].icon
-              }@2x.png`,
-              sunrise: doc.data.sys.sunrise * 1000,
-              sunset: doc.data.sys.sunset * 1000
-            };
-          })
-          .then(async () => {
-            await axios
-              .get(forecastWeatherUrl)
-              .then(async doc => {
-                timezone = doc.data.city.timezone;
-                timezoneDifference = getTimezoneDifference(
-                  timezone,
-                  userTimezone
-                );
+            const timezone = doc.data.city.timezone;
+            timezoneDifference = getTimezoneDifference(timezone, userTimezone);
 
-                const dayList = doc.data.list
-                  .map(
+            const dayList = doc.data.list
+              .map(
+                item =>
+                  `${new Date((item.dt + timezone) * 1000)
+                    .toUTCString()
+                    .split(" ")
+                    .splice(0, 4)
+                    .join(" ")}`
+              )
+              .filter((item, i, arr) => {
+                if (i !== 0 && item !== arr[i - 1]) {
+                  return item;
+                } else if (i === 0) {
+                  return item;
+                }
+              });
+
+            forecast = dayList.map(day => {
+              return {
+                day,
+                forecast: doc.data.list
+                  .filter(
                     item =>
                       `${new Date((item.dt + timezone) * 1000)
                         .toUTCString()
                         .split(" ")
                         .splice(0, 4)
-                        .join(" ")}`
+                        .join(" ")}` === day
                   )
-                  .filter((item, i, arr) => {
-                    if (i !== 0 && item !== arr[i - 1]) {
-                      return item;
-                    } else if (i === 0) {
-                      return item;
-                    }
-                  });
+                  .map(item => {
+                    const hours =
+                      item.dt && typeof item.dt === "number"
+                        ? new Date((item.dt + timezone) * 1000).getUTCHours()
+                        : 0;
+                    const adjustedHours =
+                      hours > 12 ? `${hours - 12} PM` : `${hours} AM`;
 
-                forecast = dayList.map(day => {
-                  return {
-                    day,
-                    forecast: doc.data.list
-                      .filter(
-                        item =>
-                          `${new Date((item.dt + timezone) * 1000)
-                            .toUTCString()
-                            .split(" ")
-                            .splice(0, 4)
-                            .join(" ")}` === day
-                      )
-                      .map(item => {
-                        const hours =
-                          item.dt && typeof item.dt === "number"
-                            ? new Date(
-                                (item.dt + timezone) * 1000
-                              ).getUTCHours()
-                            : 0;
-                        const adjustedHours =
-                          hours > 12 ? `${hours - 12} PM` : `${hours} AM`;
-
-                        return {
-                          timezone,
-                          dt: (item.dt + timezoneDifference) * 1000,
-                          time: adjustedHours,
-                          temp: `${
-                            item.main.temp
-                          }\u00B0 ${celsiusOrFahrenheit}`,
-                          weather: item.weather[0].main,
-                          desc: item.weather[0].description,
-                          icon: `http://openweathermap.org/img/wn/${
-                            item.weather[0].icon
-                          }@2x.png`
-                        };
-                      })
-                  };
-                });
-              })
-              .then(async () => {
-                current = {
-                  ...current,
-                  timezoneDifference
-                };
-                res.json({ current, forecast, location });
-              });
+                    return {
+                      timezone,
+                      dt: (item.dt + timezoneDifference) * 1000,
+                      time: adjustedHours,
+                      temp: `${item.main.temp}\u00B0 ${celsiusOrFahrenheit}`,
+                      weather: item.weather[0].main,
+                      desc: item.weather[0].description,
+                      icon: `http://openweathermap.org/img/wn/${
+                        item.weather[0].icon
+                      }@2x.png`
+                    };
+                  })
+              };
+            });
+          })
+          .then(async () => {
+            current = {
+              ...current,
+              timezoneDifference
+            };
+            res.json({ current, forecast, location, searchResults });
           });
       } catch (err) {
         res.status(500).send(err.message);
