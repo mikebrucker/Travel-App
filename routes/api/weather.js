@@ -25,7 +25,7 @@ const getTimezoneDifference = require("../../helpers/dateHelpers");
 //          Open Weather Map does not find State of location,
 //          So geolocation is necessary
 router.post("/", async (req, res) => {
-  let current, forecast, searchResults, timezoneDifference;
+  let current, forecast, searchResults, owMap, timezoneDifference;
   const userTimezone = req.body.userTimezone;
   const street = req.body.street ? `&street=${req.body.street}` : "";
   const city = req.body.city ? `&city=${req.body.city}` : "";
@@ -65,24 +65,41 @@ router.post("/", async (req, res) => {
 
       const forecastWeatherUrl = `http://api.openweathermap.org/data/2.5/forecast?appid=${openWeatherMapApiKey}${owmLatitude}${owmLongitude}${tempFormat}`;
 
-      const mapUrl = `https://www.mapquestapi.com/staticmap/v5/map?key=${mapQuestApiKey}&center=${latitude},${longitude}`;
+      const mapUrl = `https://tile.openweathermap.org/map/precipitation_new/1/${latitude}/${longitude}.png?appid=${openWeatherMapApiKey}`;
 
-      const searchUrl = `https://www.mapquestapi.com/search/v2/radius?key=${mapQuestApiKey}&origin=${latitude},${longitude}&radius=2&maxMatches=10&ambiguities=ignore&hostedData=mqap.ntpois|group_sic_code=?|599972&outFormat=json`;
+      // const searchUrl = `https://www.mapquestapi.com/search/v2/radius?key=${mapQuestApiKey}&origin=${latitude},${longitude}&radius=2&maxMatches=10&ambiguities=ignore&hostedData=mqap.ntpois|group_sic_code=?|599972&outFormat=json`;
 
-      try {
-        await axios.get(searchUrl).then(async doc => {
-          searchResults = doc.data.searchResults.map(item => {
-            return {
-              key: item.key,
-              name: item.name,
-              lat: item.shapePoints[0],
-              long: item.shapePoints[1]
-            };
-          });
-        });
-      } catch (err) {
-        res.status(500).send(err.message);
-      }
+      // try {
+      //   await axios.get(mapUrl).then(async doc => {
+      //     owMap = doc.data;
+      //   });
+      // } catch (err) {
+      //   res.status(500).send(err.message);
+      // }
+
+      // try {
+      //   await axios.get(searchUrl).then(async doc => {
+      //     searchResults = doc.data.searchResults
+      //       ? doc.data.searchResults.map(item => {
+      //           return {
+      //             key: item.key,
+      //             name: item.name,
+      //             lat: item.shapePoints[0],
+      //             long: item.shapePoints[1]
+      //           };
+      //         })
+      //       : [
+      //           {
+      //             key: "",
+      //             name: "",
+      //             lat: null,
+      //             long: null
+      //           }
+      //         ];
+      //   });
+      // } catch (err) {
+      //   res.status(500).send(err.message);
+      // }
 
       try {
         await axios.get(currentWeatherUrl).then(async doc => {
@@ -167,7 +184,8 @@ router.post("/", async (req, res) => {
               ...current,
               timezoneDifference
             };
-            res.json({ current, forecast, location, searchResults });
+            // searchResults
+            res.json({ current, forecast, location });
           });
       } catch (err) {
         res.status(500).send(err.message);

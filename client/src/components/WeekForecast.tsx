@@ -1,10 +1,13 @@
 import React from "react";
 import Card from "@material-ui/core/Card";
 import "./WeekForecast.scss";
+import { Forecast } from "../types/types";
 
-const WeekForecast: any = ({ forecast }) => {
+const WeekForecast: any = (props: { forecast: Forecast[] }) => {
+  const { forecast } = props;
+
   const week =
-    forecast && forecast.length > 0
+    forecast && forecast.length > 1
       ? forecast.map(item => {
           return (
             <Card key={item.day} className="forecast-card">
@@ -17,7 +20,7 @@ const WeekForecast: any = ({ forecast }) => {
                       <td>{forecast.temp}</td>
                       <td>{forecast.weather}</td>
                       <td className="table-image">
-                        <img src={forecast.icon} alt={forecast.main} />
+                        <img src={forecast.icon} alt={forecast.desc} />
                       </td>
                     </tr>
                   ))}

@@ -4,9 +4,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "client": "cd client && yarn start",
+    "client": "cd client && npm start",
     "server": "nodemon server.js",
-    "dev": "concurrently \"yarn run server\" \"yarn run client\"",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "start": "node server.js",
     "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },

@@ -1,0 +1,17 @@
+@font-face {
+  font-family: digitalDismay;
+  src: url("../fonts/digital-dismay.regular.otf");
+}
+
+.TimezoneClock {
+  margin-top: 16px;
+
+  .numbers {
+    font-family: digitalDismay, sans-serif;
+    font-size: 1.6em;
+  }
+
+  .ampm {
+    font-size: 0.8em;
+  }
+}

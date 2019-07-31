@@ -1,9 +1,6 @@
-@font-face {
-  font-family: digitalDismay;
-  src: url("../fonts/digital-dismay.regular.otf");
-}
-
 .LocationCard {
+  margin: 8px;
+
   .mapCard {
     margin: 8px;
     vertical-align: top;
@@ -15,26 +12,11 @@
     }
   }
 
-  margin: 8px;
-
   .header-card {
     background-color: aquamarine;
     margin: 8px auto;
     display: inline-block;
     min-width: 300px;
-
-    .time {
-      margin-top: 16px;
-
-      .numbers {
-        font-family: digitalDismay, sans-serif;
-        font-size: 1.6em;
-      }
-
-      .ampm {
-        font-size: 0.8em;
-      }
-    }
 
     table {
       margin: 0 auto;

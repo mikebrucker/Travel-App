@@ -1,5 +1,11 @@
 .SearchBar {
   .buttons {
     display: inline-block;
+    margin: 4px;
+  }
+
+  .inputs {
+    display: inline-block;
+    vertical-align: middle;
   }
 }

@@ -4,7 +4,12 @@ import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import Tooltip from "@material-ui/core/Tooltip";
 import "./TempFormat.scss";
 
-const TempFormat: any = ({ handleChange, tempFormat }) => {
+const TempFormat = (props: {
+  handleChange: () => void;
+  tempFormat: boolean;
+}) => {
+  const { handleChange, tempFormat } = props;
+
   return (
     <div className="TempFormat">
       <ToggleButtonGroup

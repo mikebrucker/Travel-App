@@ -7,38 +7,43 @@ export type Location = {
 };
 
 export type Current = {
-  latitude: number | null;
-  longitude: number | null;
+  latitude: number;
+  longitude: number;
   temp: string;
   weather: string;
   desc: string;
   icon: string;
-  sunrise: number | null;
-  sunset: number | null;
-  timezoneDifference: number | null;
+  sunrise: number;
+  sunset: number;
+  timezoneDifference: number;
 };
 
 export type Forecast3Hour = {
-  dt: number | null;
+  dt: number;
   time: string;
-  timezone: number | null;
+  timezone: number;
   temp: string;
   weather: string;
   desc: string;
   icon: string;
 };
 
-export type ForecastDay = {
+export type Forecast = {
   day: string;
   forecast: Forecast3Hour[];
 };
 
-export type Forecast = ForecastDay[];
-
 export type Clock = {
-  hours: number | null;
-  minutes: number | null;
-  seconds: number | null;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
+
+export type SearchResults = {
+  key: string;
+  name: string;
+  lat: number;
+  long: number;
 };
 
 export type State = {
@@ -46,7 +51,8 @@ export type State = {
   userTimezone: number;
   clock: Clock;
   searchInput: Location;
+  // searchResults: SearchResults[];
   current: Current;
-  forecast: Forecast;
+  forecast: Forecast[];
   location: Location;
 };
