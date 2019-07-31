@@ -31,7 +31,6 @@ const LocationCard = (props: {
   const mapUrl: string = `https://www.mapquestapi.com/staticmap/v5/map?key=${itDoesntLookLikeAnythingToMe}&center=${
     current.latitude
   },${current.longitude}`;
-  console.log(itDoesntLookLikeAnythingToMe);
 
   const locationFromSearch: string = Object.values(location)
     .filter(item => item !== "")
